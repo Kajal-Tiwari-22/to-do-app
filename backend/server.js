@@ -8,39 +8,44 @@ import userRouter from "./routes/userRoute.js";
 import taskRouter from "./routes/taskRoute.js";
 import forgotPasswordRouter from "./routes/forgotPassword.js";
 
-// App config
+// ✅ App config
 dotenv.config();
 const app = express();
-const port = process.env.PORT || 8001;
+const port = process.env.PORT || 8000;
 mongoose.set("strictQuery", true);
 
-// Middleware
+// ✅ Middleware
 app.use(express.json());
-app.use(cors());
 app.use(
-  helmet({
-    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  cors({
+    origin: process.env.CLIENT_URL || "*", // Allow frontend URL
+    credentials: true,
   })
 );
 
-// ✅ Root route to fix "Cannot GET /"
+// ✅ Fix for Google OAuth window.postMessage issue
+app.use(helmet({
+  crossOriginOpenerPolicy: false,
+}));
+
+// ✅ Root route to verify server status
 app.get("/", (req, res) => {
   res.status(200).send("✅ API is running successfully...");
 });
 
-// DB config
+// ✅ MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.log(" MongoDB Connection Error:", err));
+  .catch((err) => console.log("❌ MongoDB Connection Error:", err));
 
-// API endpoints
+// ✅ API routes
 app.use("/api/user", userRouter);
 app.use("/api/task", taskRouter);
 app.use("/api/forgotPassword", forgotPasswordRouter);
 
-// Listen
-app.listen(port, () => console.log(` Server running on port ${port}`));
+// ✅ Start server
+app.listen(port, () => console.log(`🚀 Server running on port ${port}`));
