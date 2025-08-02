@@ -1,42 +1,46 @@
-import express from "express"
-import mongoose from "mongoose"
-import cors from "cors"
-import dotenv from "dotenv"
-
-import userRouter from "./routes/userRoute.js"
-import taskRouter from "./routes/taskRoute.js"
-import forgotPasswordRouter from "./routes/forgotPassword.js"
-
-//app config
-dotenv.config()
-const app = express()
-const port = process.env.PORT || 8001
-mongoose.set('strictQuery', true);
-
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import dotenv from "dotenv";
 import helmet from "helmet";
 
-//middlewares
-app.use(express.json())
-app.use(cors())
-app.use(helmet({
-  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
-}))
+import userRouter from "./routes/userRoute.js";
+import taskRouter from "./routes/taskRoute.js";
+import forgotPasswordRouter from "./routes/forgotPassword.js";
 
-//db config
-mongoose.connect(process.env.MONGO_URI, {
+// App config
+dotenv.config();
+const app = express();
+const port = process.env.PORT || 8001;
+mongoose.set("strictQuery", true);
+
+// Middleware
+app.use(express.json());
+app.use(cors());
+app.use(
+  helmet({
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  })
+);
+
+// ✅ Root route to fix "Cannot GET /"
+app.get("/", (req, res) => {
+  res.status(200).send("✅ API is running successfully...");
+});
+
+// DB config
+mongoose
+  .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
-}, (err) => {
-    if (err) {
-        console.log(err)
-    } else {
-        console.log("DB Connected")
-    }
-})
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.log(" MongoDB Connection Error:", err));
 
-//api endpoints
-app.use("/api/user", userRouter)
-app.use("/api/task", taskRouter)
-app.use("/api/forgotPassword", forgotPasswordRouter)
+// API endpoints
+app.use("/api/user", userRouter);
+app.use("/api/task", taskRouter);
+app.use("/api/forgotPassword", forgotPasswordRouter);
 
-//listen
-app.listen(port, () => console.log(`Listening on localhost:${port}`))
+// Listen
+app.listen(port, () => console.log(` Server running on port ${port}`));
